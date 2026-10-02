@@ -1,10 +1,10 @@
 import streamlit as st
-
 from knowledge_base import career_rules, skill_requirements, level_value
 from forward_chaining import forward_chaining
 from backward_chaining import backward_chaining
 from academic_analysis import analyze_cgpa, analyze_subjects
 
+#gives suggestions for sujects if the student is weak or average
 suggestions = {
     "DSA": "Practice basic data structures and algorithms regularly.",
     "Programming": "Practice coding problems to improve programming skills.",
@@ -20,12 +20,12 @@ suggestions = {
 }
 
 st.title("🎓 Smart Student Academic Advisor")
-
 st.write(
     "Enter your academic details and skill levels to receive "
     "academic insights, skill recommendations, and career suggestions."
 )
 
+# takes input cgpa
 cgpa = st.number_input(
     "Enter your CGPA",
     min_value=0.0,
@@ -33,7 +33,7 @@ cgpa = st.number_input(
     value=0.0,
     step=0.1
 )
-
+# takes input career goal
 goal = st.selectbox(
     "Select your Area of Interest",
     [
@@ -46,8 +46,8 @@ goal = st.selectbox(
     ]
 )
 
+# takes input of student skill level in each subject
 st.subheader("Skill Levels")
-
 skill_names = [
     "DSA",
     "Programming",
@@ -63,11 +63,8 @@ skill_names = [
 ]
 
 student = {}
-
 col1, col2 = st.columns(2)
-
 for i, skill in enumerate(skill_names):
-
     if i % 2 == 0:
         with col1:
             student[skill] = st.selectbox(
@@ -83,74 +80,56 @@ for i, skill in enumerate(skill_names):
 
 
 if st.button("🔍 Analyze My Profile"):
-
     performance = analyze_cgpa(cgpa)
     strong, needs_improvement = analyze_subjects(student)
-
     st.subheader("📊 Academic Performance")
-
     col1, col2 = st.columns(2)
-
     with col1:
         st.metric("CGPA", cgpa)
-
     with col2:
         st.metric("Overall Performance", performance)
 
-    st.write("Strong Areas:")
+    st.write("Strong Areas:") # gives student strong subjects
     for subject in strong:
         st.write("•", subject)
 
-    st.write("Areas Needing Improvement:")
+    st.write("Areas Needing Improvement:") # gives subjects where student need to improve
     for subject in needs_improvement:
         st.write("•", subject)
 
-    st.subheader("💡 Improvement Suggestions")
-
+    st.subheader("💡 Improvement Suggestions") # gives suggestions
     if needs_improvement:
-
         for subject in needs_improvement:
-                st.write("•", suggestions[subject])
-
+            st.write("•", suggestions[subject])
     else:
         st.write("Your current skill levels are good. Keep practicing to maintain them.")
 
-    #career recomendation
+
+    #career recomendation based on student skill level
     recommendations = forward_chaining(student, career_rules, level_value)
     st.subheader("🎯 Career Recommendations")
     st.write("Based on your current skill levels:")
-
     if recommendations:
-
         career_reasons = {}
-
         for rule in recommendations:
-
             career = rule["career"]
-
             if career not in career_reasons:
                 career_reasons[career] = []
-
             for subject, required_level in rule["conditions"].items():
                 reason = subject + ": " + student[subject]
-
                 if reason not in career_reasons[career]:
                     career_reasons[career].append(reason)
 
         for career, reasons in career_reasons.items():
-
             st.success("🎯 " + career)
-
             st.write("Why this recommendation?")
-
             for reason in reasons:
                 st.write("•", reason)
-
     else:
         st.write("No direct career recommendation based on the current skill levels.")
 
-    #skill recommendation
 
+    #skill recommendation based on selected area on interest
     st.subheader("🔄 Skill Recommendation")
     st.write("Based on your selected area of interest:")
 
@@ -158,7 +137,7 @@ if st.button("🔍 Analyze My Profile"):
         goal, student, skill_requirements
     )
 
-    st.info("🎯 Area of Interest: " + goal)
+    st.info("🎯 Area of Interest: " + goal) # displays student selected area on interest
 
     st.write("Required Skills:")
     for skill in skill_requirements[goal]:
@@ -183,4 +162,4 @@ if st.button("🔍 Analyze My Profile"):
         for skill in missing:
             st.error("❌ " + skill)
     else:
-       st.success("✅ No required skills are missing.")
+        st.success("✅ No required skills are missing.")
